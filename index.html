@@ -1,0 +1,276 @@
+import matplotlib.pyplot as plt
+
+def draw_maze(maze, path=None):
+    plt.imshow(maze, cmap='binary')
+    if path:
+        path = np.array(path)
+        plt.plot(path[:, 1], path[:, 0], color='red')
+    plt.show()
+
+# Usage
+came_from = bfs(maze, start, goal)
+path = reconstruct_path(came_from, start, goal)
+draw_maze(maze, path)
+import matplotlib.pyplot as plt
+import numpy as np
+
+class InteractiveMaze:
+    def __init__(self, rows, cols):
+        self.maze = np.zeros((rows, cols), dtype=int)
+        self.start = None
+        self.goal = None
+        self.fig, self.ax = plt.subplots()
+        self.cid = self.fig.canvas.mpl_connect('button_press_event', self.onclick)
+        self.draw_maze()
+
+    def onclick(self, event):
+        # Convert click location to maze coordinates
+        row, col = int(event.ydata), int(event.xdata)
+        if event.button == 1:  # Left click to place wall
+            self.maze[row, col] = 1
+        elif event.button == 3:  # Right click to remove wall
+            self.maze[row, col] = 0
+        self.draw_maze()
+
+    def draw_maze(self):
+        self.ax.clear()
+        self.ax.imshow(self.maze, cmap='binary')
+        plt.draw()
+
+    def get_maze(self):
+        return self.maze
+
+# Create an interactive maze of size 5x5
+interactive_maze = InteractiveMaze(5, 5)
+plt.show()
+
+# Get the designed maze
+maze = interactive_maze.get_maze()
+def dfs(maze, start, goal):
+    stack = [start]
+    visited = set()
+    came_from = {}
+
+    while stack:
+        current = stack.pop()
+
+        if current == goal:
+            break
+
+        for action in actions.values():
+            neighbor = (current[0] + action[0], current[1] + action[1])
+
+            if (0 <= neighbor[0] < maze.shape[0] and 0 <= neighbor[1] < maze.shape[1]
+                and maze[neighbor] == 0 and neighbor not in visited):
+                
+                stack.append(neighbor)
+                visited.add(neighbor)
+                came_from[neighbor] = current
+
+    return came_from
+import heapq
+
+def heuristic(a, b):
+    return abs(a[0] - b[0]) + abs(a[1] - b[1])
+
+def a_star(maze, start, goal):
+    pq = []
+    heapq.heappush(pq, (0, start))
+    came_from = {}
+    cost_so_far = {start: 0}
+
+    while pq:
+        _, current = heapq.heappop(pq)
+
+        if current == goal:
+            break
+
+        for action in actions.values():
+            neighbor = (current[0] + action[0], current[1] + action[1])
+
+            if (0 <= neighbor[0] < maze.shape[0] and 0 <= neighbor[1] < maze.shape[1]
+                and maze[neighbor] == 0):
+
+                new_cost = cost_so_far[current] + 1
+                if neighbor not in cost_so_far or new_cost < cost_so_far[neighbor]:
+                    cost_so_far[neighbor] = new_cost
+                    priority = new_cost + heuristic(neighbor, goal)
+                    heapq.heappush(pq, (priority, neighbor))
+                    came_from[neighbor] = current
+
+    return came_from
+import time
+
+def dynamic_obstacles(maze, num_obstacles):
+    rows, cols = maze.shape
+    obstacles = [(np.random.randint(0, rows), np.random.randint(0, cols)) for _ in range(num_obstacles)]
+
+    def move_obstacles():
+        nonlocal obstacles
+        new_obstacles = []
+        for obstacle in obstacles:
+            new_obstacle = (obstacle[0] + np.random.choice([-1, 0, 1]), obstacle[1] + np.random.choice([-1, 0, 1]))
+            if 0 <= new_obstacle[0] < rows and 0 <= new_obstacle[1] < cols and maze[new_obstacle] == 0:
+                new_obstacles.append(new_obstacle)
+            else:
+                new_obstacles.append(obstacle)
+        obstacles = new_obstacles
+        for r, c in obstacles:
+            maze[r, c] = 1
+
+    return move_obstacles
+
+# Example usage:
+maze = np.zeros((5, 5), dtype=int)
+move_obstacles = dynamic_obstacles(maze, 2)
+
+for _ in range(10):
+    maze[maze == 1] = 0  # Clear previous obstacle positions
+    move_obstacles()
+    draw_maze(maze)
+    time.sleep(1)
+# Initialize a maze
+maze = np.array([
+    [0, 1, 0, 0, 0],
+    [0, 1, 0, 1, 0],
+    [0, 0, 0, 1, 0],
+    [0, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0]
+])
+
+start = (0, 0)
+goal = (4, 4)
+
+# Run BFS
+came_from_bfs = bfs(maze, start, goal)
+path_bfs = reconstruct_path(came_from_bfs, start, goal)
+
+# Run DFS
+came_from_dfs = dfs(maze, start, goal)
+path_dfs = reconstruct_path(came_from_dfs, start, goal)
+
+# Run A*
+came_from_a_star = a_star(maze, start, goal)
+path_a_star = reconstruct_path(came_from_a_star, start, goal)
+
+# Visualize the paths
+print("BFS Path:", path_bfs)
+print("DFS Path:", path_dfs)
+print("A* Path:", path_a_star)
+
+draw_maze(maze, path_bfs)
+draw_maze(maze, path_dfs)
+draw_maze(maze, path_a_star)
+
+
+
+import numpy as np
+import matplotlib.pyplot as plt
+from collections import deque
+import heapq
+import time
+
+# Define the maze and start/goal positions as before
+maze = np.array([
+    [0, 1, 0, 0, 0],
+    [0, 1, 0, 1, 0],
+    [0, 0, 0, 1, 0],
+    [0, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0]
+])
+
+start = (0, 0)
+goal = (4, 4)
+
+# Actions (movement directions)
+actions = {
+    "up": (-1, 0),
+    "down": (1, 0),
+    "left": (0, -1),
+    "right": (0, 1)
+}
+def bfs_animated(maze, start, goal):
+    queue = deque([start])
+    visited = set()
+    visited.add(start)
+    came_from = {}
+
+    fig, ax = plt.subplots()
+    
+    while queue:
+        current = queue.popleft()
+
+        # Visualization part: draw the current state of the maze
+        draw_maze(ax, maze, current, visited)
+        plt.pause(0.1)  # Pause to create an animation effect
+
+        if current == goal:
+            break
+
+        for action in actions.values():
+            neighbor = (current[0] + action[0], current[1] + action[1])
+
+            if (0 <= neighbor[0] < maze.shape[0] and 0 <= neighbor[1] < maze.shape[1]
+                and maze[neighbor] == 0 and neighbor not in visited):
+
+                queue.append(neighbor)
+                visited.add(neighbor)
+                came_from[neighbor] = current
+
+    plt.show()  # Show the final maze with the path
+    return came_from
+def draw_maze(ax, maze, current_position=None, visited=None, path=None):
+    ax.clear()
+    rows, cols = maze.shape
+    ax.set_xticks(np.arange(-.5, rows, 1), minor=True)
+    ax.set_yticks(np.arange(-.5, cols, 1), minor=True)
+    ax.grid(which='minor', color='gray', linestyle='-', linewidth=2)
+    
+    # Draw the maze
+    for row in range(rows):
+        for col in range(cols):
+            if maze[row, col] == 1:
+                ax.add_patch(plt.Rectangle((col, row), 1, 1, color='black'))  # Walls
+    
+    # Draw the visited cells
+    if visited:
+        for cell in visited:
+            ax.add_patch(plt.Rectangle((cell[1], cell[0]), 1, 1, color='lightblue'))  # Visited cells
+
+    # Draw the current position
+    if current_position:
+        ax.add_patch(plt.Circle((current_position[1]+0.5, current_position[0]+0.5), 0.3, color='red'))  # Agent position
+    
+    # Draw the final path
+    if path:
+        for p in path:
+            ax.add_patch(plt.Rectangle((p[1], p[0]), 1, 1, color='yellow'))  # Final path
+
+    plt.draw()
+# Run BFS with animated visualization
+came_from_bfs = bfs_animated(maze, start, goal)
+path_bfs = reconstruct_path(came_from_bfs, start, goal)
+
+# Draw the final path on the maze
+fig, ax = plt.subplots()
+draw_maze(ax, maze, path=path_bfs)
+plt.show()
+def move_dynamic_obstacles(maze, obstacles):
+    for i, obstacle in enumerate(obstacles):
+        new_position = (obstacle[0] + np.random.choice([-1, 0, 1]), obstacle[1] + np.random.choice([-1, 0, 1]))
+        if (0 <= new_position[0] < maze.shape[0] and 0 <= new_position[1] < maze.shape[1]
+                and maze[new_position] == 0):
+            maze[obstacle] = 0  # Clear the old obstacle
+            obstacles[i] = new_position
+            maze[new_position] = 1  # Place the obstacle in the new position
+    return maze
+
+# Initialize obstacles
+dynamic_obstacles = [(1, 3), (3, 1)]
+
+# Main loop to animate the obstacles
+for _ in range(10):
+    maze = move_dynamic_obstacles(maze, dynamic_obstacles)
+    draw_maze(ax, maze)
+    plt.pause(1)  # Wait for 1 second before moving obstacles again
+
